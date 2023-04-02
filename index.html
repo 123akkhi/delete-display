@@ -1,0 +1,86 @@
+<html>
+
+<body>
+    <form onsubmit="saveToLocalStorage(event)">
+        <label>Name</label>
+        <input type="text" name="username" required />
+        <label>Email</label>
+        <input type="email" name="email" required />
+        <label>Phone Number</label>
+        <input type="tel" name="phonenumber" pattern="[0-9]{10}" required />
+        <button type="submit">Submit</button>
+    </form>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <div id="displayDiv">
+        <!-- Existing stored values will be displayed here -->
+    </div>
+    <script>
+        function saveToLocalStorage(event) {
+            event.preventDefault();
+            const name = event.target.username.value;
+            const email = event.target.email.value;
+            const phonenumber = event.target.phonenumber.value;
+            localStorage.setItem("name", name);
+            localStorage.setItem("email", email);
+            localStorage.setItem("phonenumber", phonenumber);
+
+            axios.post("https://crudcrud.com/api/3fc743c5fa1f4bca893a07804ab782b9/AppointmentData", {
+                name: name,
+                email: email,
+                phonenumber: phonenumber
+            })
+                .then((response) => {
+                    console.log(response);
+                })
+                .catch((error) => {
+                    console.log(error);
+                });
+
+            //EVENT LISTENER
+            window.addEventListener("DOMContentLoaded", () => {
+                axios.get("https://crudcrud.com/api/3fc743c5fa1f4bca893a07804ab782b9/AppointmentData")
+                    .then((response) => {
+                        console.log(response);
+
+                        for (var i = 0; i < response.data.length; i++) {
+                            showNewUserOnScreen(response.data[i]);
+                        }
+                    })
+                    .catch((error) => {
+                        console.log(error);
+                    });
+            });
+
+            // Create elements to display the stored values
+            const userDiv = document.createElement("div");
+            const nameDisplay = document.createElement("p");
+            nameDisplay.textContent = "Name: " + name;
+            const emailDisplay = document.createElement("p");
+            emailDisplay.textContent = "Email: " + email;
+            const phoneDisplay = document.createElement("p");
+            phoneDisplay.textContent = "Phone Number: " + phonenumber;
+
+            // Create edit button for stored values
+            const editButton = document.createElement("button");
+            editButton.textContent = "Edit";
+            editButton.addEventListener("click", function () {
+                userDiv.removeChild(editButton);
+                userDiv.removeChild(deleteIcon);
+                nameDisplay.contentEditable = true;
+                emailDisplay.contentEditable = true;
+                phoneDisplay.contentEditable = true;
+                saveButton.style.display = "block";
+            });
+
+            // Create save button for stored values
+            const saveButton = document.createElement("button");
+            saveButton.textContent = "Save";
+            saveButton.style.display = "none";
+            saveButton.addEventListener("click", function () {
+                nameDisplay.contentEditable = false;
+                emailDisplay.contentEditable = false;
+                phoneDisplay.contentEditable = false;
+                const updatedName = nameDisplay.textContent.split(": ")[1];
+                const updatedEmail = emailDisplay.textContent.split(": ")[1];
+                const updatedPhone = phoneDisplay.textContent.split(": ")[1];
+                axios.put(`https://crudcrud.com/api/3fc743c5fa1f4bca893a07804ab782b9/AppointmentData/${response.data}
